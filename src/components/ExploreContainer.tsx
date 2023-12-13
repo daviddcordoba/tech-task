@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import './ExploreContainer.css';
-import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonGrid, IonRow, IonCol, IonInfiniteScroll, IonInfiniteScrollContent } from '@ionic/react';
+import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonGrid, IonRow, IonCol, IonInfiniteScroll, IonInfiniteScrollContent,IonRefresher,
+  IonRefresherContent } from '@ionic/react';
 import getAllPokemons from '../utils/getAllPokemons';
 import { Pokemon } from '../interfaces/Pokemon';
 
 const ExploreContainer: React.FC = () => {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [page, setPage] = useState(1); // Inicializa la página en 1
-
+  const [cardColor, setCardColor] = useState<string>('');
+const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
+  
   const fetchData = async () => {
     try {
       const data = await getAllPokemons(page);
@@ -16,6 +19,7 @@ const ExploreContainer: React.FC = () => {
         const filteredPokemons = data.filter(
           (newPokemon) => !prevPokemons.some((existingPokemon) => existingPokemon.name === newPokemon.name)
         );
+
         // Combina los Pokémon existentes con los nuevos filtrados
         return [...prevPokemons, ...filteredPokemons];
       });
@@ -27,23 +31,56 @@ const ExploreContainer: React.FC = () => {
 
     fetchData();
   }, [page]); // Agregué 'page' como dependencia para que la función se vuelva a ejecutar cuando cambie la página
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
 
   const loadMore =async (event: CustomEvent<void>) => {
-    setPage((prevPage) => prevPage + 1);
-
-    // Asegúrate de que la carga asíncrona se complete antes de completar el evento
+    console.log('entre')
+    console.log('scroll',infiniteScrollEnabled)
+    if (!infiniteScrollEnabled) {
+      return;
+    }
     await fetchData();
+
+    setPage((prevPage) => prevPage + 1);
+    
+    // Asegúrate de que la carga asíncrona se complete antes de completar el evento
 
     // Completa el evento de IonInfiniteScroll
     (event.target as HTMLIonInfiniteScrollElement).complete();
+    setInfiniteScrollEnabled(true);
+  };
+
+  const refreshData = async (event: CustomEvent) => {
+   
+    setTimeout(() => {
+      setCardColor(getRandomColor())
+
+      event.detail.complete();
+    }, 1000);
   };
 
   return (
     <IonGrid>
+      <IonRefresher slot="fixed" onIonRefresh={(e) => refreshData(e)}>
+      <IonRefresherContent
+    pullingIcon="arrow-dropdown"
+    pullingText="Desliza para refrescar"
+    refreshingSpinner="circles"
+    refreshingText="Cargando..."
+    style={{ color: 'red' }}
+  ></IonRefresherContent>
+      </IonRefresher>
       <IonRow>
         {pokemons.map((pokemon) => (
           <IonCol key={pokemon.name} size="6" size-md="4" size-lg="2.4">
-            <IonCard>
+            <IonCard style={{ backgroundColor: cardColor }}>
               <img alt="Silhouette of mountains" src={pokemon.imageUrl} style={{ maxWidth: '100%' }} />
               <IonCardHeader>
                 <IonCardTitle>{pokemon.name}</IonCardTitle>
