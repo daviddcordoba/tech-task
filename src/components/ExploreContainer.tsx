@@ -11,7 +11,6 @@ const ExploreContainer: React.FC = () => {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [page, setPage] = useState(1); // Inicializa la página en 1
   const [cardColor, setCardColor] = useState<string>('');
-  const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
   
   const fetchData = async () => {
     try {
@@ -22,32 +21,23 @@ const ExploreContainer: React.FC = () => {
           (newPokemon) => !prevPokemons.some((existingPokemon) => existingPokemon.name === newPokemon.name)
         );
 
-        // Combina los Pokémon existentes con los nuevos filtrados
         return [...prevPokemons, ...filteredPokemons];
       });
     } catch (error) {
       console.log(error);
     }
   };
-  
-  useEffect(() => {
 
+  useEffect(() => {
     fetchData();
   }, [page]); // Agregué 'page' como dependencia para que la función se vuelva a ejecutar cuando cambie la página
 
   const loadMore =async (event: CustomEvent<void>) => {
-    console.log('entre')
-    console.log('scroll',infiniteScrollEnabled)
-    if (!infiniteScrollEnabled) {
-      return;
-    }
     await fetchData();
 
     setPage((prevPage) => prevPage + 1);
     
-   
     (event.target as HTMLIonInfiniteScrollElement).complete();
-    setInfiniteScrollEnabled(true);
   };
 
   const refreshData = async (event: CustomEvent) => {
