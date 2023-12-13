@@ -2,12 +2,6 @@
 
 ion-grid{
   margin-top: 20px;
+
 }
 
-ion-refresher {
-  background-color: red; /* o el color que prefieras */
-}
-
-ion-refresher-content {
-  color: white; /* o el color que prefieras */
-}

@@ -4,18 +4,20 @@ import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, 
   IonRefresherContent } from '@ionic/react';
 import getAllPokemons from '../utils/getAllPokemons';
 import { Pokemon } from '../interfaces/Pokemon';
+import getRandomColor from '../utils/getRandomColor';
+
 
 const ExploreContainer: React.FC = () => {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [page, setPage] = useState(1); // Inicializa la página en 1
   const [cardColor, setCardColor] = useState<string>('');
-const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
+  const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
   
   const fetchData = async () => {
     try {
       const data = await getAllPokemons(page);
       setPokemons((prevPokemons) => {
-        // Filtra los Pokémon ya existentes para evitar duplicados
+        // Evito duplicados
         const filteredPokemons = data.filter(
           (newPokemon) => !prevPokemons.some((existingPokemon) => existingPokemon.name === newPokemon.name)
         );
@@ -27,18 +29,11 @@ const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
       console.log(error);
     }
   };
+  
   useEffect(() => {
 
     fetchData();
   }, [page]); // Agregué 'page' como dependencia para que la función se vuelva a ejecutar cuando cambie la página
-  const getRandomColor = () => {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  };
 
   const loadMore =async (event: CustomEvent<void>) => {
     console.log('entre')
@@ -50,9 +45,7 @@ const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
 
     setPage((prevPage) => prevPage + 1);
     
-    // Asegúrate de que la carga asíncrona se complete antes de completar el evento
-
-    // Completa el evento de IonInfiniteScroll
+   
     (event.target as HTMLIonInfiniteScrollElement).complete();
     setInfiniteScrollEnabled(true);
   };
@@ -69,13 +62,7 @@ const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
   return (
     <IonGrid>
       <IonRefresher slot="fixed" onIonRefresh={(e) => refreshData(e)}>
-      <IonRefresherContent
-    pullingIcon="arrow-dropdown"
-    pullingText="Desliza para refrescar"
-    refreshingSpinner="circles"
-    refreshingText="Cargando..."
-    style={{ color: 'red' }}
-  ></IonRefresherContent>
+      <IonRefresherContent refreshingText="Cargando..."></IonRefresherContent>
       </IonRefresher>
       <IonRow>
         {pokemons.map((pokemon) => (
@@ -97,8 +84,8 @@ const [infiniteScrollEnabled, setInfiniteScrollEnabled] = useState(true);
         ))}
       </IonRow>
       <IonInfiniteScroll onIonInfinite={(e: CustomEvent<void>) => loadMore(e)}>
-  <IonInfiniteScrollContent loadingText="Cargando más..." />
-</IonInfiniteScroll>
+        <IonInfiniteScrollContent loadingText="Cargando más..." />
+      </IonInfiniteScroll>
     </IonGrid>
   );
 };
